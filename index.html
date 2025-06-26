@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Tier List do Shrek</title>
+  <style>
+    /* Estilos básicos para a Tier List */
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background-color: #f0f0f0;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .tier {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .tier-label {
+      width: 50px;
+      font-weight: bold;
+    }
+
+    .tier-slot {
+      flex: 1;
+      min-height: 60px;
+      background-color: white;
+      border: 2px dashed #ccc;
+      padding: 10px;
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .character {
+      width: 60px;
+      height: 60px;
+      background-color: #90ee90;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: grab;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Tier List do Shrek 🧅</h1>
+
+  <!-- Tiers -->
+  <div id="tiers-container">
+    <!-- Tiers serão geradas dinamicamente via JavaScript -->
+  </div>
+
+  <!-- Lista original de personagens (pode ser arrastada para os tiers) -->
+  <h2>Personagens Disponíveis</h2>
+  <div id="characters-container" class="tier-slot"></div>
+
+  <script>
+    // 🔠 Lista dos tiers disponíveis
+    const tierLabels = ['S', 'A', 'B', 'C', 'D'];
+
+    // 🧍 Lista de personagens do Shrek
+    const characters = [
+      'Shrek', 'Burro', 'Fiona', 'Gato de Botas', 'Lord Farquaad', 'Dragão'
+    ];
+
+    // 🔁 Função que carrega a tier list do localStorage, ou retorna um objeto padrão
+    function loadTierList() {
+      const data = localStorage.getItem('shrekTierList');
+      if (data) {
+        return JSON.parse(data);
+      } else {
+        // Cria estrutura vazia com todos os personagens na lista original
+        return {
+          characters: [...characters], // personagens ainda não colocados
+          tiers: {
+            S: [],
+            A: [],
+            B: [],
+            C: [],
+            D: []
+          }
+        };
+      }
+    }
+
+    // 💾 Salva a tier list atual no localStorage
+    function saveTierList(data) {
+      localStorage.setItem('shrekTierList', JSON.stringify(data));
+    }
+
+    // 🔄 Atualiza o DOM de acordo com os dados da tier list
+    function render() {
+      const data = loadTierList();
+
+      const tiersContainer = document.getElementById('tiers-container');
+      tiersContainer.innerHTML = ''; // limpa antes de renderizar novamente
+
+      // Renderiza os tiers S, A, B, C, D
+      for (const label of tierLabels) {
+        const tierDiv = document.createElement('div');
+        tierDiv.className = 'tier';
+
+        const labelDiv = document.createElement('div');
+        labelDiv.className = 'tier-label';
+        labelDiv.textContent = label;
+
+        const slotDiv = document.createElement('div');
+        slotDiv.className = 'tier-slot';
+        slotDiv.dataset.tier = label;
+
+        // Permite arrastar personagens para esse slot
+        slotDiv.addEventListener('dragover', e => e.preventDefault());
+        slotDiv.addEventListener('drop', handleDrop);
+
+        // Adiciona os personagens salvos neste tier
+        for (const char of data.tiers[label]) {
+          const charDiv = createCharacterDiv(char);
+          slotDiv.appendChild(charDiv);
+        }
+
+        tierDiv.appendChild(labelDiv);
+        tierDiv.appendChild(slotDiv);
+        tiersContainer.appendChild(tierDiv);
+      }
+
+      // Renderiza os personagens disponíveis (fora dos tiers)
+      const charactersContainer = document.getElementById('characters-container');
+      charactersContainer.innerHTML = '';
+      charactersContainer.dataset.tier = 'characters';
+      charactersContainer.addEventListener('dragover', e => e.preventDefault());
+      charactersContainer.addEventListener('drop', handleDrop);
+
+      for (const char of data.characters) {
+        const charDiv = createCharacterDiv(char);
+        charactersContainer.appendChild(charDiv);
+      }
+    }
+
+    // 🎭 Cria um "bloco" visual de personagem
+    function createCharacterDiv(name) {
+      const div = document.createElement('div');
+      div.className = 'character';
+      div.textContent = name;
+      div.draggable = true;
+
+      // Adiciona eventos de arrastar
+      div.addEventListener('dragstart', e => {
+        e.dataTransfer.setData('text/plain', name);
+      });
+
+      return div;
+    }
+
+    // 🎯 Quando um personagem é solto em um slot
+    function handleDrop(e) {
+      e.preventDefault();
+      const charName = e.dataTransfer.getData('text/plain');
+      const targetTier = e.currentTarget.dataset.tier;
+
+      const data = loadTierList();
+
+      // Remove o personagem de onde ele estava antes
+      data.characters = data.characters.filter(c => c !== charName);
+      for (const t of tierLabels) {
+        data.tiers[t] = data.tiers[t].filter(c => c !== charName);
+      }
+
+      // Adiciona no novo lugar
+      if (targetTier === 'characters') {
+        data.characters.push(charName);
+      } else {
+        data.tiers[targetTier].push(charName);
+      }
+
+      saveTierList(data);
+      render();
+    }
+
+    // Inicializa a aplicação
+    render();
+  </script>
+</body>
+</html>
