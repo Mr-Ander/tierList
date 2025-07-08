@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Tier List do Shrek</title>
+  <title>Playlist do Multiverso Shrek</title>
   <style>
     /* 🎨 Estilo geral da página */
     body {
@@ -25,25 +25,27 @@
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
-      background-color: #ff6961;
+      background-color: #2196f3;
       color: white;
       border: none;
       border-radius: 6px;
     }
 
-    /* 📊 Linha de cada tier */
-    .tier {
+    /* 🎵 Linha de cada playlist (ex: Favoritas, Triste...) */
+    .playlist {
       display: flex;
       align-items: center;
       margin-bottom: 10px;
     }
 
-    .tier-label {
-      width: 50px;
+    /* 🎼 Nome da playlist */
+    .playlist-label {
+      width: 120px;
       font-weight: bold;
     }
 
-    .tier-slot {
+    /* 🎧 Espaço onde faixas são colocadas (drag & drop) */
+    .playlist-slot {
       flex: 1;
       min-height: 60px;
       background-color: white;
@@ -54,8 +56,8 @@
       flex-wrap: wrap;
     }
 
-    /* 👤 Personagem arrastável */
-    .character {
+    /* 🎶 Estilo visual da faixa/música */
+    .track {
       width: 60px;
       height: 60px;
       cursor: grab;
@@ -65,7 +67,8 @@
       background-color: white;
     }
 
-    .character img {
+    /* 🖼️ Imagem de cada faixa (gerada automaticamente) */
+    .track img {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -73,143 +76,138 @@
   </style>
 </head>
 <body>
-  <h1>Tier List do Multiverso Shrek 🧅</h1>
+  <h1>Playlist do Multiverso Shrek 🎵</h1>
 
-  <!-- 🔁 Botão para reiniciar a lista -->
+  <!-- 🔁 Botão para resetar a playlist -->
   <div class="controls">
-    <button onclick="resetTierList()">Resetar Tier List</button>
+    <button onclick="resetPlaylist()">Resetar Playlist</button>
   </div>
 
-  <!-- 📊 Container dos tiers -->
-  <div id="tiers-container"></div>
+  <!-- 🎚️ Container das playlists (linhas com nomes) -->
+  <div id="playlists-container"></div>
 
-  <h2>Variações Disponíveis</h2>
+  <h2>Faixas Disponíveis</h2>
 
-  <!-- 🎲 Personagens ainda não alocados -->
-  <div id="characters-container" class="tier-slot"></div>
+  <!-- 🎲 Container das faixas soltas (não atribuídas a playlists) -->
+  <div id="tracks-container" class="playlist-slot"></div>
 
   <script>
-    // 🔠 Níveis dos tiers
-    const tierLabels = ['S', 'A', 'B', 'C', 'D'];
+    // 🏷️ Nomes das playlists (em vez de S, A, B...)
+    const playlistLabels = ['Favoritas', 'Chill', 'Festa', 'Triste', 'Aleatórias'];
 
-    // 📋 Lista dos personagens do "Multiverso Shrek"
-    const characters = [
-      'Shrek Agiota',
-      'Shrek do Rio de Janeiro',
-      'Shrek Emo',
-      'Shrek Nutella',
-      'Shrek Raiz',
-      'Shrek Universitário',
-      'Shrek de Crocs',
-      'Shrek Coach de Vida',
-      'Shrek Gamer',
-      'Shrek Evangélico',
-      'Shrek Pagodeiro',
-      'Shrek Sertanejo Universitário',
-      'Shrek Influencer',
-      'Shrek Zé Droguinha',
-      'Shrek Bolsominion',
-      'Shrek do Grau',
-      'Shrek com NFT',
-      'Shrek Maconheiro',
-      'Shrek de Gravata',
-      'Shrek da Deep Web'
+    // 🎼 Lista de faixas (inspiradas no "Multiverso Shrek")
+    const tracks = [
+      'Shrek Love Song',
+      'Shrek Funk Remix',
+      'Shrek Emo Ballad',
+      'Shrek Sertanejo Raiz',
+      'Shrek Trap',
+      'Shrek Axé',
+      'Shrek Gospel',
+      'Shrek Pagode',
+      'Shrek MPB',
+      'Shrek Rock Nacional',
+      'Shrek Meditação',
+      'Shrek Techno',
+      'Shrek Eletrônica',
+      'Shrek Forró das Antigas',
+      'Shrek no Samba',
+      'Shrek Boate Azul',
+      'Shrek Lofi Beats',
+      'Shrek Internacional',
+      'Shrek Acústico MTV',
+      'Shrek do Grau Musical'
     ];
 
-    // 🖼️ Gera a URL de imagem com texto usando dummyimage.com
+    // 🔠 Gera uma imagem de capa para a faixa usando o nome
     function getImageUrl(name) {
       const cleanText = name
-        .normalize('NFD') // Quebra caracteres acentuados
-        .replace(/[\u0300-\u036f]/g, '') // Remove os acentos
-        .replace(/[^a-zA-Z0-9 ]/g, '') // Remove caracteres especiais
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9 ]/g, '')
         .trim()
-        .replace(/\s+/g, '+'); // Substitui espaços por +
+        .replace(/\s+/g, '+');
 
-      return `https://dummyimage.com/150x150/90ee90/000000&text=${cleanText}`;
+      return `https://dummyimage.com/150x150/87ceeb/000000&text=${cleanText}`;
     }
 
-    // 💾 Carrega a tier list do localStorage ou cria uma nova
-    function loadTierList() {
-      const data = localStorage.getItem('shrekTierList');
+    // 💾 Carrega dados do localStorage ou cria nova estrutura
+    function loadPlaylist() {
+      const data = localStorage.getItem('shrekPlaylist');
       if (data) {
         return JSON.parse(data);
       } else {
+        // Inicializa: todas as faixas estão fora das playlists
         return {
-          characters: [...characters],
-          tiers: {
-            S: [],
-            A: [],
-            B: [],
-            C: [],
-            D: []
-          }
+          tracks: [...tracks],
+          playlists: Object.fromEntries(playlistLabels.map(label => [label, []]))
         };
       }
     }
 
-    // 💾 Salva o estado atual da tier list no localStorage
-    function saveTierList(data) {
-      localStorage.setItem('shrekTierList', JSON.stringify(data));
+    // 💾 Salva dados no localStorage
+    function savePlaylist(data) {
+      localStorage.setItem('shrekPlaylist', JSON.stringify(data));
     }
 
-    // 🔁 Reseta toda a tier list (remove do localStorage)
-    function resetTierList() {
-      localStorage.removeItem('shrekTierList');
-      render(); // Recarrega a interface
+    // 🔁 Reseta todas as playlists e volta ao início
+    function resetPlaylist() {
+      localStorage.removeItem('shrekPlaylist');
+      render(); // Re-renderiza interface
     }
 
-    // 🧠 Renderiza a tier list na tela
+    // 🧠 Renderiza a interface da playlist na tela
     function render() {
-      const data = loadTierList();
+      const data = loadPlaylist();
 
-      const tiersContainer = document.getElementById('tiers-container');
-      tiersContainer.innerHTML = ''; // Limpa antes de criar de novo
+      const playlistsContainer = document.getElementById('playlists-container');
+      playlistsContainer.innerHTML = '';
 
-      // Cria cada linha de tier (S, A, B, etc.)
-      for (const label of tierLabels) {
-        const tierDiv = document.createElement('div');
-        tierDiv.className = 'tier';
+      // Cria visualmente cada playlist
+      for (const label of playlistLabels) {
+        const playlistDiv = document.createElement('div');
+        playlistDiv.className = 'playlist';
 
         const labelDiv = document.createElement('div');
-        labelDiv.className = 'tier-label';
+        labelDiv.className = 'playlist-label';
         labelDiv.textContent = label;
 
         const slotDiv = document.createElement('div');
-        slotDiv.className = 'tier-slot';
-        slotDiv.dataset.tier = label;
+        slotDiv.className = 'playlist-slot';
+        slotDiv.dataset.playlist = label;
 
-        // Permitir arrastar e soltar
+        // Permite soltar faixas nesta playlist
         slotDiv.addEventListener('dragover', e => e.preventDefault());
         slotDiv.addEventListener('drop', handleDrop);
 
-        // Adiciona personagens que já estão neste tier
-        for (const char of data.tiers[label]) {
-          const charDiv = createCharacterDiv(char);
-          slotDiv.appendChild(charDiv);
+        // Adiciona as faixas já atribuídas a esta playlist
+        for (const track of data.playlists[label]) {
+          const trackDiv = createTrackDiv(track);
+          slotDiv.appendChild(trackDiv);
         }
 
-        tierDiv.appendChild(labelDiv);
-        tierDiv.appendChild(slotDiv);
-        tiersContainer.appendChild(tierDiv);
+        playlistDiv.appendChild(labelDiv);
+        playlistDiv.appendChild(slotDiv);
+        playlistsContainer.appendChild(playlistDiv);
       }
 
-      // 🎲 Renderiza os personagens que ainda não foram posicionados
-      const charactersContainer = document.getElementById('characters-container');
-      charactersContainer.innerHTML = '';
-      charactersContainer.dataset.tier = 'characters';
-      charactersContainer.addEventListener('dragover', e => e.preventDefault());
-      charactersContainer.addEventListener('drop', handleDrop);
+      // 🎲 Renderiza faixas que ainda estão soltas (não atribuídas)
+      const tracksContainer = document.getElementById('tracks-container');
+      tracksContainer.innerHTML = '';
+      tracksContainer.dataset.playlist = 'tracks';
+      tracksContainer.addEventListener('dragover', e => e.preventDefault());
+      tracksContainer.addEventListener('drop', handleDrop);
 
-      for (const char of data.characters) {
-        const charDiv = createCharacterDiv(char);
-        charactersContainer.appendChild(charDiv);
+      for (const track of data.tracks) {
+        const trackDiv = createTrackDiv(track);
+        tracksContainer.appendChild(trackDiv);
       }
     }
 
-    // 👤 Cria o elemento visual de um personagem
-    function createCharacterDiv(name) {
+    // 👤 Cria o elemento visual de uma faixa/música
+    function createTrackDiv(name) {
       const div = document.createElement('div');
-      div.className = 'character';
+      div.className = 'track';
       div.draggable = true;
 
       const img = document.createElement('img');
@@ -218,7 +216,7 @@
 
       div.appendChild(img);
 
-      // Salva o nome do personagem no arrastar
+      // Salva o nome da faixa durante o drag
       div.addEventListener('dragstart', e => {
         e.dataTransfer.setData('text/plain', name);
       });
@@ -226,32 +224,33 @@
       return div;
     }
 
-    // 🎯 Lógica de soltar personagem em uma área (tier ou container inicial)
+    // 🎯 Ao soltar uma faixa em alguma playlist (ou área de faixas)
     function handleDrop(e) {
       e.preventDefault();
-      const charName = e.dataTransfer.getData('text/plain');
-      const targetTier = e.currentTarget.dataset.tier;
+      const trackName = e.dataTransfer.getData('text/plain');
+      const targetPlaylist = e.currentTarget.dataset.playlist;
 
-      const data = loadTierList();
+      const data = loadPlaylist();
 
-      // Remove o personagem de onde ele estiver
-      data.characters = data.characters.filter(c => c !== charName);
-      for (const t of tierLabels) {
-        data.tiers[t] = data.tiers[t].filter(c => c !== charName);
+      // Remove a faixa de onde quer que ela esteja
+      data.tracks = data.tracks.filter(t => t !== trackName);
+      for (const p of playlistLabels) {
+        data.playlists[p] = data.playlists[p].filter(t => t !== trackName);
       }
 
-      // Adiciona o personagem no local correto
-      if (targetTier === 'characters') {
-        data.characters.push(charName);
+      // Adiciona a faixa na playlist correta
+      if (targetPlaylist === 'tracks') {
+        data.tracks.push(trackName);
       } else {
-        data.tiers[targetTier].push(charName);
+        data.playlists[targetPlaylist].push(trackName);
       }
 
-      saveTierList(data);
+      // Salva e atualiza a interface
+      savePlaylist(data);
       render();
     }
 
-    // 🚀 Inicia tudo ao carregar a página
+    // 🚀 Inicializa tudo ao carregar a página
     render();
   </script>
 </body>
