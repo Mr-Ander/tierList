@@ -4,18 +4,25 @@
   <meta charset="UTF-8">
   <title>Playlist do Multiverso Shrek</title>
   <style>
-    /* 🎨 Estilo geral da página */
+    
+    /* Tema padrão (Shrek Light) */
     body {
       font-family: Arial, sans-serif;
       padding: 20px;
       background-color: #f0f0f0;
+      color: #000;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    .dark-mode {
+      background-color: #1e1e1e;
+      color: #dcdcdc;
     }
 
     h1 {
       text-align: center;
     }
 
-    /* 🔁 Estilo do botão de reset */
     .controls {
       text-align: center;
       margin-bottom: 20px;
@@ -31,20 +38,17 @@
       border-radius: 6px;
     }
 
-    /* 🎵 Linha de cada playlist (ex: Favoritas, Triste...) */
     .playlist {
       display: flex;
       align-items: center;
       margin-bottom: 10px;
     }
 
-    /* 🎼 Nome da playlist */
     .playlist-label {
       width: 120px;
       font-weight: bold;
     }
 
-    /* 🎧 Espaço onde faixas são colocadas (drag & drop) */
     .playlist-slot {
       flex: 1;
       min-height: 60px;
@@ -56,7 +60,11 @@
       flex-wrap: wrap;
     }
 
-    /* 🎶 Estilo visual da faixa/música */
+    .dark-mode .playlist-slot {
+      background-color: #2b2b2b;
+      border-color: #555;
+    }
+
     .track {
       width: 60px;
       height: 60px;
@@ -67,103 +75,99 @@
       background-color: white;
     }
 
-    /* 🖼️ Imagem de cada faixa (gerada automaticamente) */
+    .dark-mode .track {
+      background-color: #444;
+    }
+
     .track img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
+
+    /* 🔁 Botão modo escuro/claro */
+    .theme-toggle {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 1000;
+      padding: 8px 12px;
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+    }
   </style>
 </head>
 <body>
+  <!--contador flexivel-->
+  <h1>"contador" <spam id="contador">0</spam></h1>
+  <button onclick="modificarContador('a')">almentar</button>
+
+  <script> let contador = 0; function modificarContador(acao)
+    if (acao == 'a') 
+   (contador++;)
+   else if (acao === 'd')
+    (contador--;)
+  document.getElementById('contador').innerText = contador;</script>
+
+  <!-- 🔘 Botão de alternância de tema -->
+  <button class="theme-toggle" onclick="toggleTheme()">Shrek Dark</button>
+
   <h1>Playlist do Multiverso Shrek 🎵</h1>
 
-  <!-- 🔁 Botão para resetar a playlist -->
   <div class="controls">
     <button onclick="resetPlaylist()">Resetar Playlist</button>
   </div>
 
-  <!-- 🎚️ Container das playlists (linhas com nomes) -->
   <div id="playlists-container"></div>
 
   <h2>Faixas Disponíveis</h2>
-
-  <!-- 🎲 Container das faixas soltas (não atribuídas a playlists) -->
   <div id="tracks-container" class="playlist-slot"></div>
 
   <script>
-    // 🏷️ Nomes das playlists (em vez de S, A, B...)
     const playlistLabels = ['Favoritas', 'Chill', 'Festa', 'Triste', 'Aleatórias'];
 
-    // 🎼 Lista de faixas (inspiradas no "Multiverso Shrek")
     const tracks = [
-      'Shrek Love Song',
-      'Shrek Funk Remix',
-      'Shrek Emo Ballad',
-      'Shrek Sertanejo Raiz',
-      'Shrek Trap',
-      'Shrek Axé',
-      'Shrek Gospel',
-      'Shrek Pagode',
-      'Shrek MPB',
-      'Shrek Rock Nacional',
-      'Shrek Meditação',
-      'Shrek Techno',
-      'Shrek Eletrônica',
-      'Shrek Forró das Antigas',
-      'Shrek no Samba',
-      'Shrek Boate Azul',
-      'Shrek Lofi Beats',
-      'Shrek Internacional',
-      'Shrek Acústico MTV',
-      'Shrek do Grau Musical'
+      'Shrek Love Song', 'Shrek Funk Remix', 'Shrek Emo Ballad', 'Shrek Sertanejo Raiz',
+      'Shrek Trap', 'Shrek Axé', 'Shrek Gospel', 'Shrek Pagode', 'Shrek MPB',
+      'Shrek Rock Nacional', 'Shrek Meditação', 'Shrek Techno', 'Shrek Eletrônica',
+      'Shrek Forró das Antigas', 'Shrek no Samba', 'Shrek Boate Azul',
+      'Shrek Lofi Beats', 'Shrek Internacional', 'Shrek Acústico MTV', 'Shrek do Grau Musical'
     ];
 
-    // 🔠 Gera uma imagem de capa para a faixa usando o nome
     function getImageUrl(name) {
-      const cleanText = name
-        .normalize('NFD')
+      const cleanText = name.normalize('NFD')
         .replace(/[\u0300-\u036f]/g, '')
         .replace(/[^a-zA-Z0-9 ]/g, '')
-        .trim()
-        .replace(/\s+/g, '+');
-
+        .trim().replace(/\s+/g, '+');
       return `https://dummyimage.com/150x150/87ceeb/000000&text=${cleanText}`;
     }
 
-    // 💾 Carrega dados do localStorage ou cria nova estrutura
     function loadPlaylist() {
       const data = localStorage.getItem('shrekPlaylist');
-      if (data) {
-        return JSON.parse(data);
-      } else {
-        // Inicializa: todas as faixas estão fora das playlists
-        return {
-          tracks: [...tracks],
-          playlists: Object.fromEntries(playlistLabels.map(label => [label, []]))
-        };
-      }
+      return data ? JSON.parse(data) : {
+        tracks: [...tracks],
+        playlists: Object.fromEntries(playlistLabels.map(label => [label, []]))
+      };
     }
 
-    // 💾 Salva dados no localStorage
     function savePlaylist(data) {
       localStorage.setItem('shrekPlaylist', JSON.stringify(data));
     }
 
-    // 🔁 Reseta todas as playlists e volta ao início
     function resetPlaylist() {
       localStorage.removeItem('shrekPlaylist');
-      render(); // Re-renderiza interface
+      render();
     }
 
-    // 🧠 Renderiza a interface da playlist na tela
     function render() {
       const data = loadPlaylist();
-
       const playlistsContainer = document.getElementById('playlists-container');
       playlistsContainer.innerHTML = '';
 
-      // Cria visualmente cada playlist
       for (const label of playlistLabels) {
         const playlistDiv = document.createElement('div');
         playlistDiv.className = 'playlist';
@@ -176,11 +180,9 @@
         slotDiv.className = 'playlist-slot';
         slotDiv.dataset.playlist = label;
 
-        // Permite soltar faixas nesta playlist
         slotDiv.addEventListener('dragover', e => e.preventDefault());
         slotDiv.addEventListener('drop', handleDrop);
 
-        // Adiciona as faixas já atribuídas a esta playlist
         for (const track of data.playlists[label]) {
           const trackDiv = createTrackDiv(track);
           slotDiv.appendChild(trackDiv);
@@ -191,7 +193,6 @@
         playlistsContainer.appendChild(playlistDiv);
       }
 
-      // 🎲 Renderiza faixas que ainda estão soltas (não atribuídas)
       const tracksContainer = document.getElementById('tracks-container');
       tracksContainer.innerHTML = '';
       tracksContainer.dataset.playlist = 'tracks';
@@ -204,7 +205,6 @@
       }
     }
 
-    // 👤 Cria o elemento visual de uma faixa/música
     function createTrackDiv(name) {
       const div = document.createElement('div');
       div.className = 'track';
@@ -215,8 +215,6 @@
       img.alt = name;
 
       div.appendChild(img);
-
-      // Salva o nome da faixa durante o drag
       div.addEventListener('dragstart', e => {
         e.dataTransfer.setData('text/plain', name);
       });
@@ -224,34 +222,45 @@
       return div;
     }
 
-    // 🎯 Ao soltar uma faixa em alguma playlist (ou área de faixas)
     function handleDrop(e) {
       e.preventDefault();
       const trackName = e.dataTransfer.getData('text/plain');
       const targetPlaylist = e.currentTarget.dataset.playlist;
-
       const data = loadPlaylist();
 
-      // Remove a faixa de onde quer que ela esteja
       data.tracks = data.tracks.filter(t => t !== trackName);
       for (const p of playlistLabels) {
         data.playlists[p] = data.playlists[p].filter(t => t !== trackName);
       }
 
-      // Adiciona a faixa na playlist correta
       if (targetPlaylist === 'tracks') {
         data.tracks.push(trackName);
       } else {
         data.playlists[targetPlaylist].push(trackName);
       }
 
-      // Salva e atualiza a interface
       savePlaylist(data);
       render();
     }
 
-    // 🚀 Inicializa tudo ao carregar a página
-    render();
+    // 🌗 Alternância de tema
+    function toggleTheme() {
+      const body = document.body;
+      const button = document.querySelector('.theme-toggle');
+      const isDark = body.classList.toggle('dark-mode');
+      localStorage.setItem('shrekTheme', isDark ? 'dark' : 'light');
+      button.textContent = isDark ? 'Shrek Light' : 'Shrek Dark';
+    }
+
+    // 🚀 Ao carregar, define tema salvo
+    (function () {
+      const savedTheme = localStorage.getItem('shrekTheme');
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark-mode');
+        document.querySelector('.theme-toggle').textContent = 'Shrek Light';
+      }
+      render();
+    })();
   </script>
 </body>
 </html>
